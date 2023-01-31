@@ -34,7 +34,7 @@ async def removeTeam(message):
         await role.delete()
         await message.channel.delete()
         config[str(message.guild.id)]["channels"].pop(str(message.channel.id))
-        json.dump(config, open('./config.json', 'w'))
+        json.dump(config, open('./config.json', 'w',))
     else:
         owner_id = (config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"])
         await message.channel.send(f"only <@{owner_id}> can use this command!")
@@ -147,7 +147,11 @@ async def on_ready():
 @client.event
 async def on_guild_join(guild):
     global config
-    config[guild.id] = '{"channels":{}}'
+    
+    if (str(guild.id) in config):
+        return
+
+    config[str(guild.id)] = {"channels":{}}
     json.dump(config, open('./config.json', 'w'))
     config = json.load(open('./config.json'))  
 
@@ -188,7 +192,7 @@ async def on_message(message):
         await inviteToTeam(user_name, message)
         return
 
-    removeMemberCommand = f"{createCommandPerfix}/remove"
+    removeMemberCommand = f"{createCommandPerfix}/remove "
     if message.clean_content.startswith(removeMemberCommand): 
         user_name = message.clean_content[len(removeMemberCommand):].split("#")[0]
         await removeFromTeam(user_name, message)
