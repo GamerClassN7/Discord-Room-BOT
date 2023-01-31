@@ -1,0 +1,5 @@
+
+config.json
+secrets.py
+.vscode/settings.json
+__pycache__/*
