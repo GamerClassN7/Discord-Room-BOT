@@ -8,10 +8,21 @@ import secrets
 
 config = {}
 
+def stripTeamName(name):
+    result = 'team_'
+    for c in name:
+        if c.isalnum():
+            result += c.lower()
+        elif result and not result.endswith('_'):
+            result += '_'
+
+    if result.endswith('_'):
+        result = result[:-1]
+    return result
+
 async def createTeam(team_name, message, category_name ):
     global config
-    team_name = ("team_"+team_name).lower()
-    team_name = re.sub('[!,*)@#%(&$?.^]:{|}\/-', '', team_name)
+    team_name = stripTeamName(team_name)
 
     category = discord.utils.get(message.guild.categories, name=category_name)
     role = await message.guild.create_role(name=team_name)
@@ -21,12 +32,12 @@ async def createTeam(team_name, message, category_name ):
     config[str(message.guild.id)]["channels"][channel.id]['owner'] = message.author.id
 
     json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json')) 
+    config = json.load(open('./config.json'))
 
     await channel.set_permissions(role, read_messages=True)
     await channel.edit(topic =(f"Owner: @{message.author.name}"))
     await message.author.add_roles(role)
-    
+
     return channel
 
 async def removeTeam(message):
@@ -43,8 +54,7 @@ async def removeTeam(message):
 
 async def renameTeam(team_name, message):
     global config
-    team_name = ("team_"+team_name).lower()
-    team_name = re.sub('[!,*)@#%(&$?.^]:{|}\/-', '', team_name)
+    team_name = stripTeamName(team_name)
 
     if(config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"] == message.author.id):
         old_chanel = message.channel
@@ -61,7 +71,7 @@ async def sendHelp(message ):
     helpMsg = "**Available commands:**\n"
     helpMsg += "/help - displays this message"
     helpMsg += "/team create [team_name] - creates a new role and text channel\n"
-    
+
     if (await isGuildAdmin(message) == True):
         helpMsg += "\n"
         helpMsg += "**Administrator Commands:**\n"
@@ -75,7 +85,7 @@ async def sendHelp(message ):
     helpMsg += "/invite [user_name] - invite user to team chanel\n"
     helpMsg += "/remove [user_name] - remove user from team chanel\n"
     helpMsg += "/owner [user_name] - change owner of team chanel\n"
-    
+
     await message.channel.send(helpMsg)
 
 async def inviteToTeam(user_name, message):
@@ -113,7 +123,7 @@ async def changeSettingsValue(message, key,value):
 
     config[str(message.guild.id)][str(key)] = value
     json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json')) 
+    config = json.load(open('./config.json'))
     await message.channel.send(f"Settings modified !")
 
 async def createCategory(category_name, message):
@@ -131,7 +141,7 @@ async def changeOwner(user_name, message):
         await message.channel.edit(topic =(f"Owner: @{user_obj.name}"))
 
         json.dump(config, open('./config.json', 'w'))
-        config = json.load(open('./config.json')) 
+        config = json.load(open('./config.json'))
         await message.channel.send(f"<@{user_obj.id}> is new owner!")
     else:
         owner_id = (config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"])
@@ -140,7 +150,7 @@ async def changeOwner(user_name, message):
 # @tasks.loop(minutes=1)
 # async def statsUpdate():
 #     channel = client.get_channel(1069881624168255539)
-#     await channel.send("statsUpdate") 
+#     await channel.send("statsUpdate")
 
 # print('Servers connected to:')
 # for guild in client.guilds:
@@ -159,19 +169,19 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     global config
-    config = json.load(open('./config.json')) 
+    config = json.load(open('./config.json'))
     print(f'Bot is ready Bot name: @{client.user.name}')
 
 @client.event
 async def on_guild_join(guild):
     global config
-    
+
     if (str(guild.id) in config):
         return
 
     config[str(guild.id)] = {"channels":{}}
     json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json'))  
+    config = json.load(open('./config.json'))
 
 @client.event
 async def on_message(message):
@@ -183,7 +193,7 @@ async def on_message(message):
 
     # Ordinary message handling
     createCommandPerfix = f"@{client.user.name} "
-    config = json.load(open('./config.json'))  
+    config = json.load(open('./config.json'))
 
     #Teams Commands Section
     teamCreateCommand = f"{createCommandPerfix}/team create "
@@ -194,34 +204,34 @@ async def on_message(message):
         return
 
     deleteCommand = f"{createCommandPerfix}/delete"
-    if message.clean_content.startswith(deleteCommand): 
+    if message.clean_content.startswith(deleteCommand):
         await removeTeam(message)
         return
 
     renameCommand = f"{createCommandPerfix}/rename "
-    if message.clean_content.startswith(renameCommand): 
+    if message.clean_content.startswith(renameCommand):
         team_name = message.clean_content[len(renameCommand):].split("#")[0]
         await renameTeam(team_name, message)
         return
 
     inviteCommand = f"{createCommandPerfix}/invite "
-    if message.clean_content.startswith(inviteCommand): 
+    if message.clean_content.startswith(inviteCommand):
         user_name = message.clean_content[len(inviteCommand):].split("#")[0]
         await inviteToTeam(user_name, message)
         return
 
     removeMemberCommand = f"{createCommandPerfix}/remove "
-    if message.clean_content.startswith(removeMemberCommand): 
+    if message.clean_content.startswith(removeMemberCommand):
         user_name = message.clean_content[len(removeMemberCommand):].split("#")[0]
         await removeFromTeam(user_name, message)
         return
-    
+
     changeOwnerCommand = f"{createCommandPerfix}/owner "
-    if message.clean_content.startswith(changeOwnerCommand): 
+    if message.clean_content.startswith(changeOwnerCommand):
         user_name = message.clean_content[len(changeOwnerCommand):].split("#")[0]
         await changeOwner(user_name, message)
         return
-    
+
     settingsCommand = f"{createCommandPerfix}/settings set "
     if message.clean_content.startswith(settingsCommand):
         if (await isGuildAdmin(message) == False):
@@ -247,5 +257,5 @@ async def on_message(message):
         category_name = message.clean_content[len(teamCategoryCommand):]
         createCategory(category_name, message)
         return
-    
+
 client.run(secrets.API_KEY)
