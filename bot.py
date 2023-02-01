@@ -24,7 +24,9 @@ async def createTeam(team_name, message, category_name ):
     config = json.load(open('./config.json')) 
 
     await channel.set_permissions(role, read_messages=True)
+    await channel.edit(topic =(f"Owner: @{user_obj.name}"))
     await message.author.add_roles(role)
+    
     return channel
 
 async def removeTeam(message):
@@ -72,6 +74,7 @@ async def sendHelp(message ):
     helpMsg += "/rename [new_team_name] - rename team\n"
     helpMsg += "/invite [user_name] - invite user to team chanel\n"
     helpMsg += "/remove [user_name] - remove user from team chanel\n"
+    helpMsg += "/owner [user_name] - change owner of team chanel\n"
     
     await message.channel.send(helpMsg)
 
@@ -118,6 +121,21 @@ async def createCategory(category_name, message):
 
     if category_obj is None: #If there's no category matching with the `name`
         await message.guild.create_category(category_name) #Creates the category
+
+async def changeOwner(user_name, message):
+    global config
+
+    if(config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"] == message.author.id):
+        user_obj =  discord.utils.get(message.guild.members, name=user_name)
+        config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"] = user_obj.id
+        await message.channel.edit(topic =(f"Owner: @{user_obj.name}"))
+
+        json.dump(config, open('./config.json', 'w'))
+        config = json.load(open('./config.json')) 
+        await message.channel.send(f"<@{user_obj.id}> is new owner!")
+    else:
+        owner_id = (config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"])
+        await message.channel.send(f"only <@{owner_id}> can use this command!")
 
 # @tasks.loop(minutes=1)
 # async def statsUpdate():
@@ -196,6 +214,12 @@ async def on_message(message):
     if message.clean_content.startswith(removeMemberCommand): 
         user_name = message.clean_content[len(removeMemberCommand):].split("#")[0]
         await removeFromTeam(user_name, message)
+        return
+    
+    changeOwnerCommand = f"{createCommandPerfix}/owner "
+    if message.clean_content.startswith(changeOwnerCommand): 
+        user_name = message.clean_content[len(changeOwnerCommand):].split("#")[0]
+        await changeOwner(user_name, message)
         return
     
     settingsCommand = f"{createCommandPerfix}/settings set "
