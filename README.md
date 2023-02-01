@@ -32,3 +32,8 @@ For now it is running 24h a day.
 
 /owner  [user_name]     - change owner of team chanel
 
+**LOCAL HOST SETUP:**
+Add token to `example_secrets.py` and rename it to `secrets.py` 
+then start bot.py
+
+
