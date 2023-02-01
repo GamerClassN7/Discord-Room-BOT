@@ -24,7 +24,7 @@ async def createTeam(team_name, message, category_name ):
     config = json.load(open('./config.json')) 
 
     await channel.set_permissions(role, read_messages=True)
-    await channel.edit(topic =(f"Owner: @{user_obj.name}"))
+    await channel.edit(topic =(f"Owner: @{message.author.name}"))
     await message.author.add_roles(role)
     
     return channel
