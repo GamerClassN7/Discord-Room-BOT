@@ -2,4 +2,4 @@
 config.json
 secrets.py
 .vscode/settings.json
-__pycache__/*
+app/__pycache__/*

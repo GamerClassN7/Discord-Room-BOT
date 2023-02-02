@@ -4,7 +4,7 @@ import json
 import re
 #from discord.ext import tasks
 import json
-import secrets
+import configs.secrets
 
 config = {}
 
@@ -31,8 +31,8 @@ async def createTeam(team_name, message, category_name ):
     config[str(message.guild.id)]["channels"][channel.id] = {}
     config[str(message.guild.id)]["channels"][channel.id]['owner'] = message.author.id
 
-    json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json'))
+    json.dump(config, open('./configs/config.json', 'w'))
+    config = json.load(open('./configs/config.json'))
 
     await channel.set_permissions(role, read_messages=True)
     await channel.edit(topic =(f"Owner: @{message.author.name}"))
@@ -47,7 +47,7 @@ async def removeTeam(message):
         await role.delete()
         await message.channel.delete()
         config[str(message.guild.id)]["channels"].pop(str(message.channel.id))
-        json.dump(config, open('./config.json', 'w',))
+        json.dump(config, open('./configs/config.json', 'w',))
     else:
         owner_id = (config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"])
         await message.channel.send(f"only <@{owner_id}> can use this command!")
@@ -122,8 +122,8 @@ async def changeSettingsValue(message, key,value):
     print('value:' + value)
 
     config[str(message.guild.id)][str(key)] = value
-    json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json'))
+    json.dump(config, open('./configs/config.json', 'w'))
+    config = json.load(open('./configs/config.json'))
     await message.channel.send(f"Settings modified !")
 
 async def createCategory(category_name, message):
@@ -140,8 +140,8 @@ async def changeOwner(user_name, message):
         config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"] = user_obj.id
         await message.channel.edit(topic =(f"Owner: @{user_obj.name}"))
 
-        json.dump(config, open('./config.json', 'w'))
-        config = json.load(open('./config.json'))
+        json.dump(config, open('./configs/config.json', 'w'))
+        config = json.load(open('./configs/config.json'))
         await message.channel.send(f"<@{user_obj.id}> is new owner!")
     else:
         owner_id = (config[str(message.guild.id)]["channels"][str(message.channel.id)]["owner"])
@@ -169,7 +169,7 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     global config
-    config = json.load(open('./config.json'))
+    config = json.load(open('./configs/config.json'))
     print(f'Bot is ready Bot name: @{client.user.name}')
 
 @client.event
@@ -180,8 +180,8 @@ async def on_guild_join(guild):
         return
 
     config[str(guild.id)] = {"channels":{}}
-    json.dump(config, open('./config.json', 'w'))
-    config = json.load(open('./config.json'))
+    json.dump(config, open('./configs/config.json', 'w'))
+    config = json.load(open('./configs/config.json'))
 
 @client.event
 async def on_message(message):
@@ -193,7 +193,7 @@ async def on_message(message):
 
     # Ordinary message handling
     createCommandPerfix = f"@{client.user.name} "
-    config = json.load(open('./config.json'))
+    config = json.load(open('./configs/config.json'))
 
     #Teams Commands Section
     teamCreateCommand = f"{createCommandPerfix}/team create "
