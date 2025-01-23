@@ -69,7 +69,7 @@ async def renameTeam(team_name, message):
 
 async def sendHelp(message ):
     helpMsg = "**Available commands:**\n"
-    helpMsg += "/help - displays this message"
+    helpMsg += "/help - displays this message\n"
     helpMsg += "/team create [team_name] - creates a new role and text channel\n"
 
     if (await isGuildAdmin(message) == True):
@@ -197,43 +197,43 @@ async def on_message(message):
 
     #Teams Commands Section
     teamCreateCommand = f"{createCommandPerfix}/team create "
-    if message.clean_content.startswith(teamCreateCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(teamCreateCommand):
         team_name = message.clean_content[len(teamCreateCommand):]
         channel = await createTeam(team_name, message, config[str(message.guild.id)]["new_teams_channel"])
         await message.channel.send(f"<@{message.author.id}> Channel <#{channel.id}> created!")
         return
 
     deleteCommand = f"{createCommandPerfix}/delete"
-    if message.clean_content.startswith(deleteCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(deleteCommand):
         await removeTeam(message)
         return
 
     renameCommand = f"{createCommandPerfix}/rename "
-    if message.clean_content.startswith(renameCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(renameCommand):
         team_name = message.clean_content[len(renameCommand):].split("#")[0]
         await renameTeam(team_name, message)
         return
 
     inviteCommand = f"{createCommandPerfix}/invite "
-    if message.clean_content.startswith(inviteCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(inviteCommand):
         user_name = message.clean_content[len(inviteCommand):].split("#")[0]
         await inviteToTeam(user_name, message)
         return
 
     removeMemberCommand = f"{createCommandPerfix}/remove "
-    if message.clean_content.startswith(removeMemberCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(removeMemberCommand):
         user_name = message.clean_content[len(removeMemberCommand):].split("#")[0]
         await removeFromTeam(user_name, message)
         return
 
     changeOwnerCommand = f"{createCommandPerfix}/owner "
-    if message.clean_content.startswith(changeOwnerCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(changeOwnerCommand):
         user_name = message.clean_content[len(changeOwnerCommand):].split("#")[0]
         await changeOwner(user_name, message)
         return
 
     settingsCommand = f"{createCommandPerfix}/settings set "
-    if message.clean_content.startswith(settingsCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(settingsCommand):
         if (await isGuildAdmin(message) == False):
             await message.channel.send(f"You are not server Administrator!")
             return
@@ -243,13 +243,13 @@ async def on_message(message):
         return
 
     helpCommand = f"{createCommandPerfix}/help"
-    if message.clean_content.startswith(helpCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(helpCommand):
         await sendHelp(message)
         return
 
     #Utils Commands Section
     teamCategoryCommand = f"{createCommandPerfix}/category create "
-    if message.clean_content.startswith(teamCategoryCommand):
+    if re.sub(' +', ' ', message.clean_content).startswith(teamCategoryCommand):
         if (await isGuildAdmin(message) == False):
             await message.channel.send(f"You are not server Administrator!")
             return
